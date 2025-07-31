@@ -62,15 +62,4 @@ Group retail customers into meaningful segments based on their annual income and
    ```bash
    pip install pandas numpy scikit-learn matplotlib seaborn
 Run the script:
-
-bash
-Copy
-Edit
 python main.py
-View outputs:
-
-optimal_k_plots.png (Elbow & Silhouette)
-
-customer_segments_plot.png (Cluster visualization)
-
-customer_segments_output.csv (Final labeled data)
