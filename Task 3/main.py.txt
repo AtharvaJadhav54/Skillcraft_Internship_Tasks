@@ -1,0 +1,177 @@
+
+# =============================================================================
+# STEP 1: IMPORT REQUIRED LIBRARIES
+# =============================================================================
+import os
+import zipfile
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import seaborn as sns
+import kagglehub
+import random
+
+print("✅ All libraries imported successfully!")
+
+# =============================================================================
+# STEP 2: DOWNLOAD AND PREPARE THE DATASET (Corrected)
+# =============================================================================
+print("\nDownloading the Dogs vs. Cats dataset...")
+# The kagglehub.dataset_download function now returns the path
+# to the *already extracted* directory, not a ZIP file.
+dataset_path = kagglehub.dataset_download("salader/dogs-vs-cats")
+
+# We no longer need to unzip the file. The path is ready to use.
+print(f"✅ Dataset ready at: '{dataset_path}'")
+
+# =============================================================================
+# STEP 3: LOAD AND PREPROCESS IMAGE DATA
+# =============================================================================
+def load_and_preprocess_images(d_path, num_images_per_class=1000, img_size=64):
+    """
+    Loads images, converts them to grayscale, resizes them, and flattens them.
+
+    Args:
+        d_path (str): Path to the extracted dataset folder.
+        num_images_per_class (int): Number of images to load for each class.
+                                    SVMs can be slow with large datasets, so we sample.
+        img_size (int): The dimension to resize images to (img_size x img_size).
+
+    Returns:
+        tuple: A tuple containing the flattened image data (X) and labels (y).
+    """
+    print("\nLoading and preprocessing images...")
+    images = []
+    labels = []
+
+    # Construct the paths to the cat and dog training directories
+    cat_path = os.path.join(d_path, 'train', 'cats')
+    dog_path = os.path.join(d_path, 'train', 'dogs')
+
+    # Get a random sample of image filenames to keep processing time reasonable
+    cat_files = random.sample(os.listdir(cat_path), num_images_per_class)
+    dog_files = random.sample(os.listdir(dog_path), num_images_per_class)
+
+    # --- Process Cat Images (Label: 0) ---
+    print(f"Processing {num_images_per_class} cat images...")
+    for filename in cat_files:
+        try:
+            img_path = os.path.join(cat_path, filename)
+            # Open image and convert to grayscale for simplicity and speed
+            img = Image.open(img_path).convert('L')
+            # Resize image
+            img = img.resize((img_size, img_size))
+            # Flatten the 2D image array into a 1D vector and normalize
+            img_vector = np.array(img).flatten() / 255.0
+            images.append(img_vector)
+            labels.append(0)  # 0 for Cat
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
+
+    # --- Process Dog Images (Label: 1) ---
+    print(f"Processing {num_images_per_class} dog images...")
+    for filename in dog_files:
+        try:
+            img_path = os.path.join(dog_path, filename)
+            img = Image.open(img_path).convert('L') # Grayscale
+            img = img.resize((img_size, img_size))
+            img_vector = np.array(img).flatten() / 255.0
+            images.append(img_vector)
+            labels.append(1)  # 1 for Dog
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
+
+    X = np.array(images)
+    y = np.array(labels)
+
+    print(f"\n✅ Preprocessing complete.")
+    print(f"Total images loaded: {len(X)}")
+    print(f"Feature vector shape: {X.shape}")
+    print(f"Labels shape: {y.shape}")
+
+    return X, y
+
+# --- Execute image loading ---
+# We now pass the path we got directly from kagglehub.
+X_data, y_data = load_and_preprocess_images(dataset_path, num_images_per_class=1000, img_size=64)
+
+
+# =============================================================================
+# STEP 4: SPLIT DATA AND TRAIN THE SVM MODEL
+# =============================================================================
+print("\nSplitting data into training and testing sets...")
+# Stratify ensures the proportion of cats and dogs is the same in train and test sets
+X_train, X_test, y_train, y_test = train_test_split(
+    X_data, y_data, test_size=0.25, random_state=42, stratify=y_data
+)
+
+print(f"Training set size: {len(X_train)}")
+print(f"Testing set size: {len(X_test)}")
+
+print("\nTraining the SVM model... (This may take a few minutes)")
+# We use a Radial Basis Function (RBF) kernel, which is good for non-linear data.
+# C is the regularization parameter.
+svm_model = SVC(kernel='rbf', C=1.0, random_state=42)
+svm_model.fit(X_train, y_train)
+
+print("✅ SVM model training complete!")
+
+# =============================================================================
+# STEP 5: EVALUATE THE MODEL
+# =============================================================================
+print("\nEvaluating the model on the test set...")
+y_pred = svm_model.predict(X_test)
+
+# --- Calculate Accuracy ---
+accuracy = accuracy_score(y_test, y_pred)
+print(f"\nModel Accuracy: {accuracy:.2%}")
+
+# --- Classification Report ---
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred, target_names=['Cat', 'Dog']))
+
+# --- Confusion Matrix ---
+print("\nConfusion Matrix:")
+cm = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(6, 5))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+            xticklabels=['Cat', 'Dog'], yticklabels=['Cat', 'Dog'])
+plt.xlabel('Predicted Label')
+plt.ylabel('True Label')
+plt.title('Confusion Matrix')
+plt.show()
+
+# =============================================================================
+# STEP 6: TEST WITH A RANDOM IMAGE FROM THE TEST SET
+# =============================================================================
+def test_random_image(model, X_test_data, y_test_data, y_pred_data, img_size=64):
+    """
+    Selects a random image from the test set and displays the model's prediction.
+    """
+    # Select a random index
+    random_index = random.randint(0, len(X_test_data) - 1)
+
+    # Get the image, true label, and predicted label
+    test_image = X_test_data[random_index]
+    true_label = y_test_data[random_index]
+    predicted_label = y_pred_data[random_index]
+
+    # Reshape the flattened image back to 2D for display
+    image_to_show = test_image.reshape(img_size, img_size)
+
+    # Define class names
+    class_names = {0: 'Cat', 1: 'Dog'}
+
+    # Display the result
+    plt.figure(figsize=(4, 4))
+    plt.imshow(image_to_show, cmap='gray')
+    plt.title(f"True: {class_names[true_label]}\nPredicted: {class_names[predicted_label]}",
+              color='green' if true_label == predicted_label else 'red')
+    plt.axis('off')
+    plt.show()
+
+print("\n--- Testing a random image from the test set ---")
+test_random_image(svm_model, X_test, y_test, y_pred)
