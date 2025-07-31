@@ -58,4 +58,5 @@ Implement an SVM classifier to distinguish between cat and dog images using a ba
    ```bash
    pip install numpy pandas scikit-learn matplotlib seaborn pillow kagglehub
 Run the script:
+
 python main.py
