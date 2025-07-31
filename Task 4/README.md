@@ -58,15 +58,8 @@ Build a deep learning model to recognize and classify 10 distinct hand gestures 
    ```bash
    pip install tensorflow keras numpy matplotlib seaborn kagglehub
 Run the end-to-end script:
-
-bash
-Copy
-Edit
 python main.py
-Predict on your own image:
 
-python
-Copy
-Edit
+Predict on your own image:
 from main import predict_new_image
 predict_new_image(model, '/path/to/your/gesture.png', class_names)
