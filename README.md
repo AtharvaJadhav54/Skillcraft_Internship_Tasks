@@ -13,9 +13,6 @@ Skillcraft_Internship_Tasks/
 ├── Task 3/ # Image classification (Cats vs. Dogs) with SVM
 └── Task 4/ # Hand gesture recognition using Transfer Learning
 
-yaml
-Copy
-Edit
 
 Each `Task X` folder includes:
 - `main.py` (or equivalent) — full end-to-end code  
@@ -33,9 +30,7 @@ Each `Task X` folder includes:
    cd Skillcraft_Internship_Tasks
 Navigate to a task folder
 
-bash
-Copy
-Edit
+
 cd Task\ 1    # or Task 2, Task 3, Task 4
 Install dependencies
 Each task has its own requirements.txt (or a list in its README). Common libraries include:
@@ -49,14 +44,10 @@ kagglehub (for dataset download)
 Example:
 
 bash
-Copy
-Edit
 pip install -r requirements.txt
 Run the main script
 
-bash
-Copy
-Edit
+bash 
 python main.py
 Review outputs
 
@@ -77,6 +68,3 @@ Task 3: SVM image classifier on cats vs. dogs, raw pixel flattening, performance
 
 Task 4: Transfer-learning with MobileNetV2 for hand gestures, data restructuring, fine-tuning, 99% accuracy.
 
-📋 Contact
-Made with ❤️ by Atharva Jadhav
-Feel free to reach out on LinkedIn for questions or collaboration!
