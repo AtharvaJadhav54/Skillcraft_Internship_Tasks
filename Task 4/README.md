@@ -60,6 +60,3 @@ Build a deep learning model to recognize and classify 10 distinct hand gestures 
 Run the end-to-end script:
 python main.py
 
-Predict on your own image:
-from main import predict_new_image
-predict_new_image(model, '/path/to/your/gesture.png', class_names)
